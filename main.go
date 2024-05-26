@@ -6,54 +6,44 @@ import (
 	"os"
   "io"
   "encoding/json"
+  "html/templates"
+  "github.com/gorilla/websocket"
 )
 
-func getRoot(w http.ResponseWriter, r *http.Request) {
-  cookie, err := r.Cookie("username")
-  if errors.Is(err, http.ErrNoCookie) {
-    http.Redirect(w, r, "/login", http.StatusSeeOther)
-  } else
-    http.Redirect(w, r, "/waiting-room", http.StatusSeeOther)
-  }
+func rootHandler(w http.ResponseWriter, r *http.Request) {
+  http.ServeFile(w, r, "templates/login.html")
 }
-func getLogin(w http.ResponseWriter, r *http.Request) {
-  switch r.Method {
-  case http.MethodGet:
-    // TODO serve static file with form submission for username
-  case http.MethodPut:
-    usernameCookie, _ := r.Cookie("username")
-    usernameCookie.HttpOnly = true
-    http.setCookie(w, usernameCookie)
-    http.Redirect(w, r, "/waiting-room", http.StatusSeeOther)
+func waitingRoomHandler(w http.ResponseWriter, r *http.Request) {
+  http.ServeFile(w, r, "templates/waiting.html")
+  upgrader := websocket.Upgrader{
+    ReadBufferSize:  1024,
+    WriteBufferSize: 1024,
   }
+  conn, _ := upgrader.Upgrade(w, r, nil)
 }
-func getWaitingRoom(w http.ResponseWriter, r *http.Request) {
-  switch r.Method {
-  case http.MethodGet:
-    // TODO serve static file for when users are inside waiting room
-    // make sure they can vote for a topic by number
-  case http.MethodPut:
-    voteforstr := r.FormValue("votefor")
-    voteforint, _ := strconv.Atoi(voteforstr)
-    wordlists[voteforint] += 1
-  }
-}
+
 func getGameRoom(w http.ResponseWriter, r *http.Request) {
   switch r.Method {
   case http.MethodGet:
-    // TODO serve static file where users can see the current game state
-  case http.MethodPut:
+    gamePage := templates.ParseFile("game.html")
+    gamePage.Execute(w, gameroom)
+  case http.MethodPost:
     username := r.Cookie("username")
     votefor := r.FormValue("votefor")
     word := r.FormValue("word")
     if word != "" {
       gameroom.players.username.word = word
-    else if votefor != "" {
+    } else if votefor != "" {
       gameroom.players.votefor.votes += 1
     }
   }
 }
-
+func getGameInfo(w http.ResponseWriter, r *http.Request) {
+  gameinfo := Response{
+    Message: Marshal(gameroom)
+  }
+  json.NewEncoder(w).Encode(gameinfo)
+}
 
 
 type Wordlist struct {
@@ -69,13 +59,16 @@ var wordlists []Wordlist = func() {
     contents, _ = os.ReadFile(lists[i].Name)
     wordlists[i].words = strings.split(contents, "\n")
   }
+  return wordlists
 }
 
 type WaitingRoom struct {
-  usernames []string
-  wordlists wordlists []Wordlist
+  sockets map[websocket.Conn]string
+  wordlists []Wordlist
+  votes int
 }
-// TODO globally instantiate waitingroom
+var waitingroom WaitingRoom
+waitingroom.wordlists = wordlists
 
 type Player struct {
   username string
@@ -85,7 +78,8 @@ type Player struct {
 }
 type GameRoom struct {
   wordlist []string
-  players = map[string]Player{}
+  players map[string]Player
+  round int
 }
 // TODO globally instantiate gameroom
 
