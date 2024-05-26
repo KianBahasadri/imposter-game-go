@@ -1,0 +1,126 @@
+Albert Einstein
+Isaac Newton
+Leonardo da Vinci
+William Shakespeare
+Ludwig van Beethoven
+Wolfgang Amadeus Mozart
+Galileo Galilei
+Charles Darwin
+Marie Curie
+Nikola Tesla
+Thomas Edison
+Winston Churchill
+Abraham Lincoln
+George Washington
+Franklin D. Roosevelt
+Nelson Mandela
+Mahatma Gandhi
+Martin Luther King Jr.
+Mother Teresa
+Princess Diana
+Queen Elizabeth II
+Cleopatra
+Julius Caesar
+Alexander the Great
+Genghis Khan
+Napoleon Bonaparte
+Winston Churchill
+Adolf Hitler
+Joseph Stalin
+Vladimir Lenin
+Karl Marx
+Sigmund Freud
+Albert Camus
+Friedrich Nietzsche
+Jean-Paul Sartre
+Rene Descartes
+Socrates
+Plato
+Aristotle
+Confucius
+Laozi
+Sun Tzu
+Buddha
+Jesus Christ
+Prophet Muhammad
+Moses
+Saint Peter
+Paul the Apostle
+Vincent van Gogh
+Pablo Picasso
+Michelangelo
+Raphael
+Andy Warhol
+Salvador Dalí
+Rembrandt
+Edgar Degas
+Claude Monet
+Johann Sebastian Bach
+Franz Schubert
+Frederic Chopin
+Pyotr Ilyich Tchaikovsky
+Igor Stravinsky
+Sergei Rachmaninoff
+John Lennon
+Paul McCartney
+Elvis Presley
+Michael Jackson
+Madonna
+David Bowie
+Freddie Mercury
+Whitney Houston
+Frank Sinatra
+Bob Dylan
+Jimi Hendrix
+Kurt Cobain
+Prince
+Beyoncé
+Taylor Swift
+Rihanna
+Lady Gaga
+Adele
+Barack Obama
+Donald Trump
+Hillary Clinton
+Bill Clinton
+George W. Bush
+Ronald Reagan
+Richard Nixon
+John F. Kennedy
+Dwight D. Eisenhower
+Harry S. Truman
+Theodore Roosevelt
+Woodrow Wilson
+Benjamin Franklin
+Alexander Hamilton
+Thomas Jefferson
+Mikhail Gorbachev
+Kim Jong-un
+Angela Merkel
+Margaret Thatcher
+Jacinda Ardern
+Greta Thunberg
+Malala Yousafzai
+Anne Frank
+Helen Keller
+Florence Nightingale
+Amelia Earhart
+J.K. Rowling
+Stephen King
+George Orwell
+J.R.R. Tolkien
+Agatha Christie
+Ernest Hemingway
+F. Scott Fitzgerald
+Mark Twain
+Charles Dickens
+Jane Austen
+Emily Brontë
+Charlotte Brontë
+James Joyce
+Virginia Woolf
+William Faulkner
+Gabriel García Márquez
+Jorge Luis Borges
+Salman Rushdie
+Haruki Murakami
