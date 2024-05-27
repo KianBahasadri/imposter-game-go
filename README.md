@@ -4,6 +4,7 @@
 this is my first time using go
 please dont cry
 
+i based the logic off of the hub example from the gorillas library
 
 /:
 "please set your username"
