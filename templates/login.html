@@ -1,15 +1,43 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title> Login </title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title> Login </title>
 </head>
 <body>
-    <form method="post">
-        <input type="text" name="votefor"><br><br>
-        <input type="submit" value="Vote">
-    </form>
+  <h2> Welcome to the imposter game </h2>
+  <h3> your username </h3>
+  <form>
+    <input id="text-input" type="text" name="votefor">
+    <br><br>
+    <input type="submit" value="Select">
+  </form>
+  <br><br><br><br>
+  <a href="/waiting-room">click to go to the waiting room</a>
+  <script>
+    function displayUsername() {
+      let h3element = document.querySelector("h3");
+      let username = document.cookie
+      .split("; ")
+      .find((row) => row.startsWith("username="))
+      ?.split("=")[1];
+      if (username == undefined) {
+        h3element.textContent = "please select a username";
+      } else {
+        h3element.textContent = "your username is: " + username;
+      }
+    }
+    displayUsername()
+
+    let form = document.querySelector("form")
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+      let input = document.getElementById("text-input").value;
+      document.cookie = "username=" + input;
+      displayUsername()
+    });
+  </script>
 </body>
 </html>
 

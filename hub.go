@@ -1,18 +1,18 @@
 package main
-
+import "fmt"
 type Hub struct {
   msgHandler func(text string, info *map[string]any) []byte
-  info       map[string]any
+  info       *map[string]any
   clients    map[*Client]bool
   broadcast  chan []byte
   register   chan *Client
   unregister chan *Client
 }
 
-func newHub(msgHandler func(text string, info *map[string]any) []byte) *Hub {
+func newHub(msgHandler func(text string, info *map[string]any) []byte, info *map[string]any) *Hub {
   return &Hub{
     msgHandler: msgHandler,
-    info:       make(map[string]any),
+    info:       info,
     broadcast:  make(chan []byte),
     register:   make(chan *Client),
     unregister: make(chan *Client),
@@ -31,7 +31,8 @@ func (h *Hub) run() {
         close(client.send)
       }
     case message := <-h.broadcast:
-      resp := h.msgHandler(string(message), &h.info)
+      fmt.Println(string(message))
+      resp := h.msgHandler(string(message), h.info)
       for client := range h.clients {
         select {
         case client.send <- resp:

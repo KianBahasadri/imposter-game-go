@@ -1,14 +1,82 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title> Waiting Room </title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title> Waiting Room</title>
 </head>
 <body>
-    <form method="post">
-        <input type="text" name="votefor"><br><br>
-        <input type="submit" value="Vote">
-    </form>
+  <h2> You are in the waiting room of the imposter game </h2>
+  <h3 id="username"> your username </h3>
+  <h3> Please choose one of the following topics and click 'Vote' </h3>
+  <form>
+    <input type="radio" name="topic" value="blank">
+    <label for=""> loading... </label>
+    <br><br>
+    <input type="submit" value="Select">
+  </form>
+  <script>
+    let h3element = document.getElementById("username");
+    const username = document.cookie
+    .split("; ")
+    .find((row) => row.startsWith("username="))
+    ?.split("=")[1];
+    if (username == undefined) {
+      window.location.replace("/")
+    } else {
+      h3element.textContent = "your username is: " + username;
+    }
+    function displayVotes(jsontext) {
+      let info = JSON.parse(jsontext);
+      let form = document.createElement("form")
+      for (let topic of info.topiclist) {
+        let input = document.createElement("input");
+        input.type = "radio";
+        input.name = "topic";
+        input.value = topic;
+        form.appendChild(input);
+        let label = document.createElement("label");
+        label.textContent = topic;
+        let count = 0;
+        for (user in info.uservotes) {
+          // idfk man
+          if (info.uservotes[user] == topic) {
+            count++;
+          }
+        }
+        let label2 = document.createElement("label");
+        label2.textContent = "Votes: " + count;
+        label2.style.marginLeft = "30px";
+        form.appendChild(label);
+        form.appendChild(label2);
+        form.appendChild(document.createElement("br"));
+      }
+      let submitButton = document.createElement("input");
+      submitButton.type = "submit";
+      submitButton.value = "Select";
+      form.appendChild(submitButton);
+      form.addEventListener("submit", (event) => {
+        event.preventDefault();
+        let form = document.querySelector("form");
+        for (let radio of form.elements["topic"]) {
+          if (radio.checked) {
+            conn.send(username + "," + radio.value)
+          }
+        }
+      });
+      let oldForm = document.querySelector("form");
+      oldForm.parentNode.replaceChild(form, oldForm);
+    }
+    let conn;
+    if (window["WebSocket"]) {
+      conn = new WebSocket("ws://" + document.location.host + "/ws1");
+      setTimeout(()=>{conn.send("a,b")}, 1500);
+      conn.onclose = function (evt) {console.log("Websocket Connection closed.");};
+      conn.onmessage = function (evt) {displayVotes(evt.data);}
+    } else {
+      document.alert("Your browser does not support WebSockets");
+    }
+  </script>
 </body>
 </html>
+
