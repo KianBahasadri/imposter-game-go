@@ -9,7 +9,7 @@ import (
   "math/rand/v2"
 )
 
-func loginHandler(w http.ResponseWriter, r *http.Request) {
+func rootHandler(w http.ResponseWriter, r *http.Request) {
   http.ServeFile(w, r, "templates/login.html")
 }
 func waitingRoomHandler(w http.ResponseWriter, r *http.Request) {

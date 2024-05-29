@@ -8,13 +8,11 @@ i based the logic off of the hub example from the gorillas library
 
 /:
 "please set your username"
-button -> go to waiting room
+button -> join so-and-so's game
+button -> create game
 
-/waiting-room:
-"please vote"
-form -> lock in vote (sends username and topic vote)
-websocket -> live update votes
+when game is created, a hub is created and set
 
-/game-room:
+/game?game="username's game":
 stateful game cycle until end screen
 websocket -> live update etc.
