@@ -16,15 +16,52 @@
       <p class="lead mb-4">For now, enter your name and join your friend's game or start your own</p>
       <form class="d-grid gap-2 d-sm-flex justify-content-sm-center">
         <input id="username-input" type="text" name="votefor">
-        <button type="button" class="btn btn-outline-secondary btn-lg px-4">Start a new game</button>
-        <button type="button" class="btn btn-primary btn-lg px-4 gap-3">Join X's game</button>
+        <button id="start-game" type="button" class="btn btn-outline-secondary btn-lg px-4">Start a new game</button>
       </form>
+    </div>
+    <div id="gamelist" class="col-lg-6 mx-auto mt-3">
+      <button type="button" class="btn btn-primary btn-lg px-4 gap-3">Join X's game</button>
     </div>
   </div>
   <script>
+    // THIS SECTION HANDLES JOINING AND STARTING GAMES
+    let gamelist = document.getElementById("gamelist");
+    async function getGameLists() {
+      let resp = await fetch("/queryRooms");
+      let roomlist = await resp.json();
+      while (gamelist.firstChild) {
+        gamelist.removeChild(gamelist.firstChild);
+      }
+      for (let name of roomlist) {
+        let btn = document.createElement("button");
+        btn.className = "btn btn-primary btn-lg px-4 gap-3 m-3";
+        btn.textContent = "Join " + name + "'s Game";
+        btn.addEventListener("click", (event) => {
+          document.cookie = "roomName=" + name;
+          window.location.replace("/game");
+        });
+        gamelist.appendChild(btn);
+      }
+      setTimeout(getGameLists, 1000);
+    }
+    getGameLists();
+    
+    document.getElementById("start-game")
+    .addEventListener("click", (event) => {
+      fetch('/createHub', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: new URLSearchParams({'roomName': username})
+      });
+      document.cookie = "roomName=" + username;
+    });
+  </script>
+  <script>
+    // THIS SECTION HANDLES USERNAME SETTING AND DISPLAY
+    let username;
     function displayUsername() {
       let h1element = document.querySelector("h1");
-      let username = document.cookie
+      username = document.cookie
       .split("; ")
       .find((row) => row.startsWith("username="))
       ?.split("=")[1];

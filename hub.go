@@ -9,10 +9,10 @@ type Hub struct {
   unregister chan *Client
 }
 
-func newHub(msgHandler func(text string, info *map[string]any) []byte, info *map[string]any) *Hub {
+func newHub() *Hub {
   return &Hub{
-    msgHandler: msgHandler,
-    info:       info,
+    msgHandler: hubMsgHandler,
+    info:       initializeInfo(),
     broadcast:  make(chan []byte),
     register:   make(chan *Client),
     unregister: make(chan *Client),
