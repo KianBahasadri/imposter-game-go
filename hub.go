@@ -1,5 +1,5 @@
 package main
-import "fmt"
+
 type Hub struct {
   msgHandler func(text string, info *map[string]any) []byte
   info       *map[string]any
@@ -31,7 +31,6 @@ func (h *Hub) run() {
         close(client.send)
       }
     case message := <-h.broadcast:
-      fmt.Println(string(message))
       resp := h.msgHandler(string(message), h.info)
       for client := range h.clients {
         select {
