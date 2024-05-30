@@ -8,6 +8,37 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 </head>
 <body>
+  <header class="align-items-center mb-3 mb-md-0 me-md-auto display-6 text-center py-3 mb-4">
+    <img class="mx-4 img-thumbnail" src="logo.webp" width="80px">
+        You are playing: <b class="px-2"> Imposter</b>
+      <br>
+      <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">
+        Find out who the Imposter is! (Cheats)
+      </button>
+
+      <!-- Modal -->
+      <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h1 class="modal-title fs-5" id="exampleModalLabel">Payment Portal</h1>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body h5">
+              What, you thought this was going to be free?
+              <br>
+              $5 and you can know who the imposter is
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+              <form action="/create-checkout-session" method="POST">
+                <button type="submit" class="btn btn-primary">Go To Checkout</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
   <div class="row px-1 py-5 my-5 text-center display-8 lead">
     <div class="col-lg-6 mx-auto">
     <p id="voting-message" class="lead mb-4">Vote for a topic! Click a Button to Vote! Once 3 or more players have voted for a topic, the game will begin! I Recommend choosing from the imdb lists :)</p>
@@ -16,13 +47,13 @@
     <div id="topicDisplay" class="col"></div>
     <hr>
   </div>
-  <div> if you're imposter, here is everyone else's word </div>
   <table></table>
   <div id="wordsubmission" class="my-5" style="display: none;">
     <label for="wordsubmission" class="form-label">Enter your personal word</label>
     <input type="text" class="form-control" onkeydown="Submitword(this)">
     <div class="form-text">Type your word and hit Enter</div>
   </div>
+  <div> if you're imposter, here is everyone else's word </div>
 
   <script>
     ////////////////////////////////////////////////////
