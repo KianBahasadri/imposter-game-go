@@ -6,7 +6,6 @@ import (
   "fmt"
   "os"
   "math/rand"
-  "strconv"
 )
 
 type Info struct {
@@ -49,42 +48,32 @@ func hubMsgHandler(text string, info Info) []byte {
     if !usernameExists {
       info.Usernames = append(info.Usernames, username)
     }
-  case "voteTopic":
-    topicVote := split[1]
-    validVote := false
-    for _, topic := range info.Topiclist {
-      if topic == topicVote {
-        validVote = true
-        break
-      }
-    }
-    if validVote {
-      info.Topicvotes[username] = topicVote
+  case "Topicvotes":
+    vote := split[2]
+    info.Topicvotes[username] = vote
 
-      // if everyone voted, set the secret word
-      if len(info.Topicvotes) == len(info.Usernames) {
-        if info.Secret != "" {
-          count := make(map[string]int)
-          for _, topic := range info.Topicvotes {
-            count[topic] = count[topic] + 1
-          }
-          _maxTopic := ""
-          _maxVotes := 0
-          for topic, votesStr := range info.Topicvotes {
-            votes, _ := strconv.Atoi(votesStr)
-            if _maxVotes < votes {
-              _maxTopic = topic
-              _maxVotes = votes
-            }
-          }
-          wordlistBytes, _ := os.ReadFile("wordlists/" + _maxTopic)
-          wordlist := strings.Split(string(wordlistBytes), "\n")
-          randInt := rand.Int() % len(wordlist)
-          info.Secret = wordlist[randInt]
+    // if everyone voted, set the secret word
+    if len(info.Topicvotes) == len(info.Usernames) {
+      if info.Secret != "" {
+        count := make(map[string]int)
+        for _, topic := range info.Topicvotes {
+          count[topic] = count[topic] + 1
         }
+        _maxTopic := ""
+        _maxVotes := 0
+        for topic, votes := range count {
+          if _maxVotes < votes {
+            _maxTopic = topic
+            _maxVotes = votes
+          }
+        }
+        wordlistBytes, _ := os.ReadFile("wordlists/" + _maxTopic)
+        wordlist := strings.Split(string(wordlistBytes), "\n")
+        randInt := rand.Int() % len(wordlist)
+        info.Secret = wordlist[randInt]
       }
     }
-  case "votePlayer":
+  case "Playervotes":
     playerVote := split[1]
     validVote := false
     for _, name := range info.Usernames {
