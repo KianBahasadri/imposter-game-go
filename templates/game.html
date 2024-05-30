@@ -10,12 +10,16 @@
 <body>
   <div class="row px-1 py-5 my-5 text-center display-8 lead">
     <div class="col-lg-6 mx-auto">
-    <p class="lead mb-4">Vote for a topic! Click a Button to Vote! Once 3 or more players have voted for a topic, the game will begin! I Recommend choosing from the imdb lists :)</p>
+    <p id="voting-message" class="lead mb-4">Vote for a topic! Click a Button to Vote! Once 3 or more players have voted for a topic, the game will begin! I Recommend choosing from the imdb lists :)</p>
     <div id="usernameDisplay" class="col">Your name: </div>
     <div id="secretDisplay" class="col"></div>
     <div id="topicDisplay" class="col"></div>
   </div>
   <table></table>
+  <div id="wordsubmission" style="display: none;" class="form-floating m-3 p-3">
+    <input type="text" class="form-control" id="floatingInput" placeholder="Word">
+    <label for="floatingInput">Enter Word</label>
+  </div>
   <script>
     ////////////////////////////////////////////////////
     // THIS SECTION CREATES THE VOTE FUNCTIONS
@@ -56,14 +60,27 @@
     function castVote(category, value) {
       conn.send(category + "::" + username + "::" + value);
     }
+    function enableWordSubmission() {
+      document.getElementById("wordsubmission").style.display = "";
+    }
+
     ////////////////////////////////////////////////////
     // THIS SECTION MANAGES THE GAMESTATE AND USES PREVIOUS FUNCTIONS
     let info;
     function handleData(data) {
       info = JSON.parse(data);
       console.log(info);
-      if (info.Round == 0) {
-        createVoteTable(info.Topiclist, "Topicvotes");
+      if (info.Round == 0) {createVoteTable(info.Topiclist, "Topicvotes"); return;}
+      if (info.Round == 1) {updateDisplay();}
+      // game state cycles between voting and submitting
+      // once all the submissions are in, it switches to voting
+      // once all the votes are in, it increments the round and switches to submissions
+      // havent implemented game ending yet
+      if (info.Words[info.Round] == undefined || info.Words[info.Round].length != info.Usernames.length) {
+        document.querySelector("table").style.display = "none";
+        document.getElementById("wordsubmission").style.display = "";
+      } else {
+        createVoteTable(info.Usernames, "Playervotes");
       }
     }
     ////////////////////////////////////////////////////
@@ -94,9 +111,13 @@
       if (username == undefined) {
         window.location.replace = "/"
       } 
-      usernameElement.textContent = "Your name: " + username;
+      usernameElement.textContent = "Your name is: " + username;
     })();
-
+    function updateDisplay() {
+      document.getElementById("voting-message").style.display = "none";
+      document.getElementById("secretDisplay").textContent = "Secret is: " + info.Secret;
+      document.getElementById("topicDisplay").textContent = "Topic is: " + info.Topic;
+    }
   </script>
 </body>
 </html>

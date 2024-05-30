@@ -13,11 +13,14 @@ type Info struct {
   Topiclist   []string
   Topicvotes  map[string]string
   Playervotes map[string]string
+  Words       map[int]map[string]string
   Round       int
   Secret      string
+  Imposter    string
+  Topic       string
 }
 
-func initializeInfo() Info {
+func initializeInfo() *Info {
   var info Info
   dir, _ := os.Open("wordlists/")
   topics, _ := dir.Readdirnames(0)
@@ -25,12 +28,15 @@ func initializeInfo() Info {
   info.Usernames = make([]string, 0)
   info.Topicvotes = make(map[string]string)
   info.Playervotes = make(map[string]string)
+  info.Words = make(map[int]map[string]string)
   info.Round = 0
   info.Secret = ""
-  return info
+  info.Imposter = ""
+  info.Topic = ""
+  return &info
 }
 
-func hubMsgHandler(text string, info Info) []byte {
+func hubMsgHandler(text string, info *Info) []byte {
   fmt.Println(text)
   split := strings.Split(text, "::")
   action := split[0]
@@ -53,8 +59,8 @@ func hubMsgHandler(text string, info Info) []byte {
     info.Topicvotes[username] = vote
 
     // if everyone voted, set the secret word
-    if len(info.Topicvotes) == len(info.Usernames) {
-      if info.Secret != "" {
+    if len(info.Usernames) >= 3 && len(info.Topicvotes) == len(info.Usernames) {
+      if info.Secret == "" {
         count := make(map[string]int)
         for _, topic := range info.Topicvotes {
           count[topic] = count[topic] + 1
@@ -67,24 +73,22 @@ func hubMsgHandler(text string, info Info) []byte {
             _maxVotes = votes
           }
         }
-        wordlistBytes, _ := os.ReadFile("wordlists/" + _maxTopic)
+        info.Topic = _maxTopic
+        wordlistBytes, _ := os.ReadFile("wordlists/" + info.Topic)
         wordlist := strings.Split(string(wordlistBytes), "\n")
         randInt := rand.Int() % len(wordlist)
         info.Secret = wordlist[randInt]
+        info.Round = 1
+        randInt = rand.Int() % len(info.Usernames)
+        info.Imposter = info.Usernames[randInt]
       }
     }
   case "Playervotes":
-    playerVote := split[1]
-    validVote := false
-    for _, name := range info.Usernames {
-      if name == info.Playervotes[username] {
-        validVote = true
-        break
-      }
-    }
-    if validVote {
-      info.Playervotes[username] = playerVote
-    }
+    playerVote := split[2]
+    info.Playervotes[username] = playerVote
+  case "submitWord":
+    word := split[2]
+    info.Words[info.Round][username] = word
   }
   textjson, _ := json.Marshal(info)
   return textjson
