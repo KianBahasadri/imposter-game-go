@@ -14,12 +14,16 @@
     <div id="usernameDisplay" class="col">Your name: </div>
     <div id="secretDisplay" class="col"></div>
     <div id="topicDisplay" class="col"></div>
+    <hr>
   </div>
+  <div> if you're imposter, here is everyone else's word </div>
   <table></table>
-  <div id="wordsubmission" style="display: none;" class="form-floating m-3 p-3">
-    <input type="text" class="form-control" id="floatingInput" placeholder="Word">
-    <label for="floatingInput">Enter Word</label>
+  <div id="wordsubmission" class="my-5" style="display: none;">
+    <label for="wordsubmission" class="form-label">Enter your personal word</label>
+    <input type="text" class="form-control" onkeydown="Submitword(this)">
+    <div class="form-text">Type your word and hit Enter</div>
   </div>
+
   <script>
     ////////////////////////////////////////////////////
     // THIS SECTION CREATES THE VOTE FUNCTIONS
@@ -60,26 +64,44 @@
     function castVote(category, value) {
       conn.send(category + "::" + username + "::" + value);
     }
-    function enableWordSubmission() {
-      document.getElementById("wordsubmission").style.display = "";
+    function Submitword(element) {
+      if (event.key === "Enter") {
+        conn.send("Submitword" + "::" + username + "::" + element.value);
+        element.disabled = true;
+      }
     }
-
     ////////////////////////////////////////////////////
     // THIS SECTION MANAGES THE GAMESTATE AND USES PREVIOUS FUNCTIONS
     let info;
     function handleData(data) {
-      info = JSON.parse(data);
+      try {
+        info = JSON.parse(data);
+      } catch (error) {
+        console.log(data);
+        console.error(error);
+      }
       console.log(info);
-      if (info.Round == 0) {createVoteTable(info.Topiclist, "Topicvotes"); return;}
-      if (info.Round == 1) {updateDisplay();}
+      if (info.Round ==  0) {createVoteTable(info.Topiclist, "Topicvotes"); return;}
+      if (info.Round ==  1) {updateDisplay();}
+
+      if (info.Voted != "Abstain") {
+        window.alert("Game Over! " + info.Voted + " Was ELIMINATED by group vote!");
+      }
       // game state cycles between voting and submitting
       // once all the submissions are in, it switches to voting
       // once all the votes are in, it increments the round and switches to submissions
       // havent implemented game ending yet
-      if (info.Words[info.Round] == undefined || info.Words[info.Round].length != info.Usernames.length) {
+      let numWords = 0;
+      if (info.Words[info.Round] != undefined) {
+        numWords = Object.keys(info.Words[info.Round]).length;
+      }
+      if (numWords != info.Usernames.length) {
         document.querySelector("table").style.display = "none";
         document.getElementById("wordsubmission").style.display = "";
+        document.getElementById("wordsubmission").disabled = false;
       } else {
+        document.getElementById("wordsubmission").style.display = "none";
+        info.Usernames.push("Abstain");
         createVoteTable(info.Usernames, "Playervotes");
       }
     }
@@ -96,7 +118,7 @@
       conn.onclose = function (evt) {console.log("Websocket Connection closed.");};
       conn.onmessage = function (evt) {handleData(evt.data);}
     } else {
-      document.alert("Your browser does not support WebSockets");
+      window.alert("Your browser does not support WebSockets");
     }
     ////////////////////////////////////////////////////
     document.title = roomName + "'s Game";

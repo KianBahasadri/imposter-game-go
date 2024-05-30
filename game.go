@@ -18,6 +18,7 @@ type Info struct {
   Secret      string
   Imposter    string
   Topic       string
+  Voted       string
 }
 
 func initializeInfo() *Info {
@@ -33,11 +34,13 @@ func initializeInfo() *Info {
   info.Secret = ""
   info.Imposter = ""
   info.Topic = ""
+  info.Voted = "Abstain"
   return &info
 }
 
 func hubMsgHandler(text string, info *Info) []byte {
   fmt.Println(text)
+  fmt.Println(info.Usernames)
   split := strings.Split(text, "::")
   action := split[0]
   username := split[1]
@@ -79,6 +82,7 @@ func hubMsgHandler(text string, info *Info) []byte {
         randInt := rand.Int() % len(wordlist)
         info.Secret = wordlist[randInt]
         info.Round = 1
+        info.Words[1] = make(map[string]string)
         randInt = rand.Int() % len(info.Usernames)
         info.Imposter = info.Usernames[randInt]
       }
@@ -86,7 +90,29 @@ func hubMsgHandler(text string, info *Info) []byte {
   case "Playervotes":
     playerVote := split[2]
     info.Playervotes[username] = playerVote
-  case "submitWord":
+    // if everyone voted, check if gameEnd and increment Round
+    if len(info.Playervotes) == len(info.Usernames) {
+      count := make(map[string]int)
+      for _, name := range info.Playervotes {
+        count[name] = count[name] + 1
+      }
+      _maxName := ""
+      _maxVotes := 0
+      for name, votes := range count {
+        if _maxVotes < votes {
+          _maxName = name
+          _maxVotes = votes
+        }
+      }
+      info.Voted = _maxName
+      if info.Voted != "Abstain" {
+        defer fmt.Println("close this hub")
+      }
+      info.Round += 1
+      info.Words[info.Round] = make(map[string]string)
+    }
+ 
+  case "Submitword":
     word := split[2]
     info.Words[info.Round][username] = word
   }
