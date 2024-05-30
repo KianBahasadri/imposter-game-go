@@ -27,8 +27,8 @@ func initializeInfo() Info {
   info.Topicvotes = make(map[string]string)
   info.Playervotes = make(map[string]string)
   info.Round = 0
-  info.Secret = nil
-  return &info
+  info.Secret = ""
+  return info
 }
 
 func hubMsgHandler(text string, info Info) []byte {
@@ -62,15 +62,15 @@ func hubMsgHandler(text string, info Info) []byte {
       info.Topicvotes[username] = topicVote
 
       // if everyone voted, set the secret word
-      if len(Info.Topicvotes) == len(info.Usernames) {
-        if info.Secret != nil {
+      if len(info.Topicvotes) == len(info.Usernames) {
+        if info.Secret != "" {
           count := make(map[string]int)
           for _, topic := range info.Topicvotes {
             count[topic] = count[topic] + 1
           }
           _maxTopic := ""
           _maxVotes := 0
-          for topic, votesStr := range topicvotes {
+          for topic, votesStr := range info.Topicvotes {
             votes, _ := strconv.Atoi(votesStr)
             if _maxVotes < votes {
               _maxTopic = topic
@@ -88,13 +88,13 @@ func hubMsgHandler(text string, info Info) []byte {
     playerVote := split[1]
     validVote := false
     for _, name := range info.Usernames {
-      if name == info.PlayerVote {
+      if name == info.Playervotes[username] {
         validVote = true
         break
       }
     }
     if validVote {
-      info.PlayerVotes[username] = playerVote
+      info.Playervotes[username] = playerVote
     }
   }
   textjson, _ := json.Marshal(info)

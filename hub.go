@@ -2,7 +2,7 @@ package main
 
 type Hub struct {
   msgHandler func(text string, info Info) []byte
-  info       map[string]any
+  info       Info
   clients    map[*Client]bool
   broadcast  chan []byte
   register   chan *Client

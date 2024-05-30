@@ -12,18 +12,58 @@
     <div id="usernameDisplay" class="col">Your name: </div>
     <div id="secretDisplay" class="col">Secret: </div>
   </div>
-  <table>
-  </table>
+  <table></table>
   <script>
     ////////////////////////////////////////////////////
-    // THIS SECTION CREATES THE VOTE FUNCTION
-    function startVote() {
-
+    // THIS SECTION CREATES THE VOTE FUNCTIONS
+    function createVoteTable(choices, category) {
+      let table = document.createElement("table");
+      table.className = "table";
+      document.querySelector("table").replaceWith(table);
+      let header = document.createElement("thead");
+      table.append(header);
+      let row = document.createElement("tr");
+      header.append(row);
+      for (let choice of choices) {
+        let col = document.createElement("th");
+        let btn = document.createElement("button");
+        btn.textContent = choice;
+        btn.className = "btn btn-primary";
+        btn.addEventListener("click", (event) => {
+          castVote(category, choice);
+        });
+        col.append(btn);
+        row.append(col);
+      }
+      let tbody = document.createElement("tbody");
+      for (name in info[category]) {
+        let row = document.createElement("tr");
+        for (let choice of choices) {
+          let td = document.createElement("td");
+          if (info[category][name] == choice) {
+            td.textContent = name;
+          }
+          row.append(td);
+          }
+        tbody.append(row);
+        }
+      table.append(tbody);
     }
-    
+    function castVote(category, value) {
+      delete info[category][username];
+      info[category][username] = value;
+      conn.send(info.stringify());
+    }
     ////////////////////////////////////////////////////
-    // THIS SECTION MANAGES THE GAMESTATE AND USES THE VOTE FUNCTION
-    
+    // THIS SECTION MANAGES THE GAMESTATE AND USES PREVIOUS FUNCTIONS
+    let info;
+    function handleData(data) {
+      info = JSON.parse(data);
+      console.log(info);
+      if (info.Round == 0) {
+        createVoteTable(info.Topiclist);
+      }
+    }
     ////////////////////////////////////////////////////
     let roomName;
     // THIS SECTION SETS UP THE WEBSOCKET CONNECTION
@@ -32,10 +72,10 @@
       .split("; ")
       .find((row) => row.startsWith("roomName="))
       ?.split("=")[1];
-      conn = new WebSocket("ws://" + document.location.host + "/ws-" + roomName);
+      conn = new WebSocket("ws://" + document.location.host + "/ws/" + roomName);
       setTimeout(()=>{conn.send("setUsername::" + username)}, 1000);
       conn.onclose = function (evt) {console.log("Websocket Connection closed.");};
-      conn.onmessage = function (evt) {displayVotes(evt.data); tryToStart(evt.data);}
+      conn.onmessage = function (evt) {handleData(evt.data);}
     } else {
       document.alert("Your browser does not support WebSockets");
     }
@@ -43,24 +83,18 @@
     document.title = roomName + "'s Game";
     // THIS SECTION HANDLES USERNAME, TITLE, ETC. (DISPLAYS STUFF)
     let username;
-    function displayUsername() {
-      let h1element = document.querySelector("h1");
+     (() => {
+      let usernameElement = document.getElementById("usernameDisplay");
       username = document.cookie
       .split("; ")
       .find((row) => row.startsWith("username="))
       ?.split("=")[1];
       if (username == undefined) {
-        username = ""
+        window.location.replace = "/"
       } 
-      h1element.textContent = "Welcome to Imposter, " + username;
-    }
-    displayUsername()
+      usernameElement.textContent = "Your name: " + username;
+    })();
 
-    document.getElementById("username-input")
-      .addEventListener("input", (event) => {
-      document.cookie = "username=" + document.getElementById("username-input").value;
-      displayUsername()
-    });
   </script>
 </body>
 </html>

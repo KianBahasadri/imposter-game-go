@@ -1,7 +1,6 @@
 package main
 import (
   "net/http"
-  "strings"
   "encoding/json"
   "sort"
 )
@@ -31,20 +30,18 @@ func gameHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func websocketRouter(w http.ResponseWriter, r *http.Request) {
-  uri := r.URL.Path
-  split := strings.Split(uri, "-")
-  roomName := split[1]
+  roomName := r.PathValue("roomName")
   serveWs(activeHubs[roomName], w, r)
 }
   
 var activeHubs = make(map[string]*Hub)
 
 func main() {
-  http.HandleFunc("/", loginHandler)
+  http.HandleFunc("/{$}", loginHandler) // only matches "/"
   http.HandleFunc("/queryRooms", queryRooms)
-  http.HandleFunc("/createHub", createHub)
+  http.HandleFunc("POST /createHub", createHub)
   http.HandleFunc("/game", gameHandler)
-  http.HandleFunc("/ws-", websocketRouter)
+  http.HandleFunc("/ws/{roomName}", websocketRouter)
 
   http.ListenAndServe(":8080", nil)
 }
