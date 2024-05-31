@@ -3,7 +3,7 @@ package main
 import (
   "strings"
   "encoding/json"
-  "fmt"
+  "log"
   "os"
   "math/rand"
 )
@@ -19,9 +19,10 @@ type Info struct {
   Imposter    string
   Topic       string
   Voted       string
+  Roomname    string
 }
 
-func initializeInfo() *Info {
+func initializeInfo(roomName string) *Info {
   var info Info
   dir, _ := os.Open("wordlists/")
   topics, _ := dir.Readdirnames(0)
@@ -35,12 +36,13 @@ func initializeInfo() *Info {
   info.Imposter = ""
   info.Topic = ""
   info.Voted = "Abstain"
+  info.Roomname = roomName
   return &info
 }
 
 func hubMsgHandler(text string, info *Info) []byte {
-  fmt.Println(text)
-  fmt.Println(info.Usernames)
+  log.Println(text)
+  log.Println(info.Usernames)
   split := strings.Split(text, "::")
   action := split[0]
   username := split[1]
@@ -62,7 +64,7 @@ func hubMsgHandler(text string, info *Info) []byte {
     info.Topicvotes[username] = vote
 
     // if everyone voted, set the secret word
-    if len(info.Usernames) >= 3 && len(info.Topicvotes) == len(info.Usernames) {
+    if len(info.Usernames) >= 1 && len(info.Topicvotes) == len(info.Usernames) {
       if info.Secret == "" {
         count := make(map[string]int)
         for _, topic := range info.Topicvotes {
@@ -98,15 +100,20 @@ func hubMsgHandler(text string, info *Info) []byte {
       }
       _maxName := ""
       _maxVotes := 0
+      tieFound := false
       for name, votes := range count {
         if _maxVotes < votes {
           _maxName = name
           _maxVotes = votes
+          tieFound = false
+        } else if _maxVotes == votes {
+          tieFound = true
         }
       }
       info.Voted = _maxName
-      if info.Voted != "Abstain" {
-        defer fmt.Println("close this hub")
+      if !tieFound && info.Voted != "Abstain" {
+        defer delete(activeHubs, info.Roomname)
+        defer log.Print("Deleting Hub: " + info.Roomname)
       }
       info.Round += 1
       info.Words[info.Round] = make(map[string]string)

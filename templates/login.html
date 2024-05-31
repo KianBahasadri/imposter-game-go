@@ -15,8 +15,10 @@
       <p class="lead mb-4">The goal of Imposter™ is to find out which player is the imposter and vote them out! But be careful, if you vote the wrong person, you lose!</p>
       <p class="lead mb-4">Enter your name and join your friend's game or start your own</p>
       <form class="d-grid gap-2 d-sm-flex justify-content-sm-center">
-        <input id="username-input" type="text" name="votefor">
-        <button id="start-game" type="button" class="btn btn-outline-secondary btn-lg px-4">Start a new game</button>
+        <input id="username-input" type="text">
+        <button id="start-game" type="button" class="btn btn-outline-secondary btn-lg px-4" disabled>
+          Start a new game
+        </button>
       </form>
     </div>
     <div id="gamelist" class="col-lg-6 mx-auto mt-3">
@@ -36,6 +38,9 @@
         let btn = document.createElement("button");
         btn.className = "btn btn-primary btn-lg px-4 gap-3 m-3";
         btn.textContent = "Join " + name + "'s Game";
+        if (username === "") {
+          btn.disabled = true;
+        }
         btn.addEventListener("click", (event) => {
           document.cookie = "roomName=" + name;
           window.location.replace("/game");
@@ -46,15 +51,18 @@
     }
     getGameLists();
     
-    document.getElementById("start-game")
-    .addEventListener("click", (event) => {
+    document.getElementById("start-game").addEventListener("click", startNewGame);
+    document.getElementById("username-input").addEventListener("keydown", (event) =>
+      {if (event.key === "Enter") {startNewGame(event);}});
+    function startNewGame(event) {
+      event.preventDefault()
       fetch('/createHub', {
         method: 'POST',
         headers: {'Content-Type': 'application/x-www-form-urlencoded'},
         body: new URLSearchParams({'roomName': username})
       });
       document.cookie = "roomName=" + username;
-    });
+    }
   </script>
   <script>
     // THIS SECTION HANDLES USERNAME SETTING AND DISPLAY
@@ -69,6 +77,9 @@
         username = ""
       } 
       h1element.textContent = "Welcome to Imposter, " + username;
+      for (let btn of document.querySelectorAll("button")) {
+        btn.disabled = false;
+      }
     }
     displayUsername()
 

@@ -30,12 +30,29 @@ func queryRooms(w http.ResponseWriter, r *http.Request) {
 
 func createHub(w http.ResponseWriter, r *http.Request) {
   roomName := r.FormValue("roomName")
-  activeHubs[roomName] = newHub()
+  activeHubs[roomName] = newHub(roomName)
   go activeHubs[roomName].run()
 }
 
 func gameHandler(w http.ResponseWriter, r *http.Request) {
-  http.ServeFile(w, r, "templates/game.html")
+  cookie, err := r.Cookie("roomName")
+  if err != nil {
+    if err == http.ErrNoCookie {
+      http.Redirect(w, r, "/", http.StatusSeeOther) 
+      return 
+    } else {
+      log.Printf("Error retrieving cookie: %v", err)
+      return
+    }
+  }
+  // check if room actually exists
+  for name := range activeHubs {
+    if name == cookie.Value {
+      http.ServeFile(w, r, "templates/game.html")
+      return
+    }
+  }
+  http.Redirect(w, r, "/", http.StatusSeeOther) 
 }
 
 func websocketRouter(w http.ResponseWriter, r *http.Request) {
@@ -44,7 +61,13 @@ func websocketRouter(w http.ResponseWriter, r *http.Request) {
 }
   
 func createCheckoutSession(w http.ResponseWriter, r *http.Request) {
-  domain := "http://localhost:4242"
+  cookie, err := r.Cookie("roomName")
+  if err != nil {
+    log.Printf("Error retrieving cookie: %v", err)
+    return
+  }
+  imposter := activeHubs[cookie.Value].info.Imposter
+  domain := "https://imposter.bahasadri.com"
   params := &stripe.CheckoutSessionParams{
     LineItems: []*stripe.CheckoutSessionLineItemParams{
       &stripe.CheckoutSessionLineItemParams{
@@ -54,8 +77,8 @@ func createCheckoutSession(w http.ResponseWriter, r *http.Request) {
       },
     },
     Mode: stripe.String(string(stripe.CheckoutSessionModePayment)),
-    SuccessURL: stripe.String(domain + "/success.html"),
-    CancelURL: stripe.String(domain + "/cancel.html"),
+    SuccessURL: stripe.String(domain + "/game" + "?imposter=" + imposter),
+    CancelURL: stripe.String(domain + "/game" + "?imposter= Pay up and find out"),
   }
   s, err := session.New(params)
   if err != nil {
@@ -80,8 +103,9 @@ func main() {
   http.HandleFunc("/game", gameHandler)
   http.HandleFunc("/ws/{roomName}", websocketRouter)
   http.HandleFunc("/create-checkout-session", createCheckoutSession)
-
- log.Fatal(http.ListenAndServeTLS(":443", "keys/imposter.bahasadri.com.pem", "keys/imposter.bahasadri.com.key", nil))
+  
+  //log.Fatal(http.ListenAndServe(":8080", nil))
+  log.Fatal(http.ListenAndServeTLS(":443", "keys/imposter.bahasadri.com.pem", "keys/imposter.bahasadri.com.key", nil))
 }
 
 

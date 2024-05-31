@@ -21,7 +21,9 @@
         <div class="modal-dialog">
           <div class="modal-content">
             <div class="modal-header">
-              <h1 class="modal-title fs-5" id="exampleModalLabel">Payment Portal</h1>
+              <h1 class="modal-title fs-5" id="exampleModalLabel">Payment Portal <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-paypal" viewBox="0 0 16 16">
+  <path d="M14.06 3.713c.12-1.071-.093-1.832-.702-2.526C12.628.356 11.312 0 9.626 0H4.734a.7.7 0 0 0-.691.59L2.005 13.509a.42.42 0 0 0 .415.486h2.756l-.202 1.28a.628.628 0 0 0 .62.726H8.14c.429 0 .793-.31.862-.731l.025-.13.48-3.043.03-.164.001-.007a.35.35 0 0 1 .348-.297h.38c1.266 0 2.425-.256 3.345-.91q.57-.403.993-1.005a4.94 4.94 0 0 0 .88-2.195c.242-1.246.13-2.356-.57-3.154a2.7 2.7 0 0 0-.76-.59l-.094-.061ZM6.543 8.82a.7.7 0 0 1 .321-.079H8.3c2.82 0 5.027-1.144 5.672-4.456l.003-.016q.326.186.548.438c.546.623.679 1.535.45 2.71-.272 1.397-.866 2.307-1.663 2.874-.802.57-1.842.815-3.043.815h-.38a.87.87 0 0 0-.863.734l-.03.164-.48 3.043-.024.13-.001.004a.35.35 0 0 1-.348.296H5.595a.106.106 0 0 1-.105-.123l.208-1.32z"/>
+</svg> </h1>
               <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body h5">
@@ -30,9 +32,9 @@
               $5 and you can know who the imposter is
             </div>
             <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-              <form action="/create-checkout-session" method="POST">
-                <button type="submit" class="btn btn-primary">Go To Checkout</button>
+              <button type="button" class="p-0 btn btn-secondary" data-bs-dismiss="modal">Close</button>
+              <form class="m-0 p-0" action="/create-checkout-session" method="POST">
+                <button type="submit" class="p-2 fw-semibold fs-4 btn btn-primary">Go To Checkout</button>
               </form>
             </div>
           </div>
@@ -47,21 +49,55 @@
     <div id="topicDisplay" class="col"></div>
     <hr>
   </div>
-  <table></table>
+  <table id="votingTable"></table>
   <div id="wordsubmission" class="my-5" style="display: none;">
     <label for="wordsubmission" class="form-label">Enter your personal word</label>
-    <input type="text" class="form-control" onkeydown="Submitword(this)">
+    <input id="wordinputfield" type="text" class="form-control" onkeydown="Submitword(this)">
     <div class="form-text">Type your word and hit Enter</div>
   </div>
-  <div> if you're imposter, here is everyone else's word </div>
-
+  <table id="wordsTable"></table>
+  
   <script>
+    ////////////////////////////////////////////////////
+    // THIS SECTION MANAGES THE WORDS TABLE
+    function createWordsTable() {
+      let table = document.createElement("table");
+      table.className = "table";
+      table.id = "wordsTable";
+      document.getElementById("wordsTable").replaceWith(table);
+      let header = document.createElement("thead");
+      table.append(header);
+      let row = document.createElement("tr");
+      header.append(row);
+      for (let name of ["Round #"].concat(info.Usernames)) {
+        let col = document.createElement("th");
+        col.textContent = name;
+        row.append(col);
+      }
+      let tbody = document.createElement("tbody");
+      for (let i=1; i < info.Round+1; i++) {
+        let row = document.createElement("tr");
+          let td = document.createElement("td");
+          td.textContent = i;
+          td.className = "text-center fw-semibold";
+          row.append(td);
+          for (name of info.Usernames) {
+          let td = document.createElement("td");
+          td.textContent = info.Words[i][name];
+          td.className = "text-center fw-semibold";
+          row.append(td);
+          }
+        tbody.append(row);
+        }
+      table.append(tbody);
+    }
     ////////////////////////////////////////////////////
     // THIS SECTION CREATES THE VOTE FUNCTIONS
     function createVoteTable(choices, category) {
       let table = document.createElement("table");
       table.className = "table";
-      document.querySelector("table").replaceWith(table);
+      table.id = "votingTable"
+      document.getElementById("votingTable").replaceWith(table);
       let header = document.createElement("thead");
       table.append(header);
       let row = document.createElement("tr");
@@ -116,20 +152,22 @@
       if (info.Round ==  1) {updateDisplay();}
 
       if (info.Voted != "Abstain") {
-        window.alert("Game Over! " + info.Voted + " Was ELIMINATED by group vote!");
+        window.alert("Game Over! " + info.Voted + " Was ELIMINATED by group vote!\n" + "The imposter was: " + info.Imposter);
+        window.location.replace("/");
       }
       // game state cycles between voting and submitting
       // once all the submissions are in, it switches to voting
       // once all the votes are in, it increments the round and switches to submissions
       // havent implemented game ending yet
       let numWords = 0;
+      createWordsTable();
       if (info.Words[info.Round] != undefined) {
         numWords = Object.keys(info.Words[info.Round]).length;
       }
       if (numWords != info.Usernames.length) {
         document.querySelector("table").style.display = "none";
         document.getElementById("wordsubmission").style.display = "";
-        document.getElementById("wordsubmission").disabled = false;
+        document.getElementById("wordinputfield").disabled = false;
       } else {
         document.getElementById("wordsubmission").style.display = "none";
         info.Usernames.push("Abstain");
@@ -144,7 +182,7 @@
       .split("; ")
       .find((row) => row.startsWith("roomName="))
       ?.split("=")[1];
-      conn = new WebSocket("ws://" + document.location.host + "/ws/" + roomName);
+      conn = new WebSocket("wss://" + document.location.host + "/ws/" + roomName);
       setTimeout(()=>{conn.send("setUsername::" + username)}, 1000);
       conn.onclose = function (evt) {console.log("Websocket Connection closed.");};
       conn.onmessage = function (evt) {handleData(evt.data);}
@@ -167,8 +205,19 @@
       usernameElement.textContent = "Your name is: " + username;
     })();
     function updateDisplay() {
-      document.getElementById("voting-message").style.display = "none";
-      document.getElementById("secretDisplay").textContent = "Secret is: " + info.Secret;
+      let searchParams = new URLSearchParams(window.location.search);
+      if (searchParams.has('imposter')) {
+        document.getElementById("voting-message").textContent = "The Imposter is: " + searchParams.get('imposter');
+        document.getElementById("voting-message").style.display = "";
+      } else {
+        document.getElementById("voting-message").style.display = "none";
+      }
+      if (info.Imposter != username) {
+        document.getElementById("secretDisplay").textContent = "Secret is: " + info.Secret;
+      } else {
+        document.getElementById("secretDisplay").textContent = "You are the Imposter";
+        document.getElementById("secretDisplay").clasName = "col fw-semibold";
+      }
       document.getElementById("topicDisplay").textContent = "Topic is: " + info.Topic;
     }
   </script>
