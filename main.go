@@ -8,6 +8,7 @@ import (
   "fmt"
   "log"
   "os"
+  "time"
 )
 
 func loginHandler(w http.ResponseWriter, r *http.Request) {
@@ -32,6 +33,7 @@ func createHub(w http.ResponseWriter, r *http.Request) {
   roomName := r.FormValue("roomName")
   activeHubs[roomName] = newHub(roomName)
   go activeHubs[roomName].run()
+  time.AfterFunc(30 * time.Minute, func() {delete(activeHubs, roomName)})
 }
 
 func gameHandler(w http.ResponseWriter, r *http.Request) {
